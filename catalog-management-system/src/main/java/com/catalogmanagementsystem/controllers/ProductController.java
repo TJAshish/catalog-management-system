@@ -39,7 +39,7 @@ public class ProductController {
         }
     }
     @PutMapping("/{sku}")
-    public ResponseEntity<Product> updateProductBySku(@PathVariable String sku, @Valid @RequestBody Product updatedProduct) {
+    public ResponseEntity<Product> updateProductBySku(@PathVariable String sku,@RequestBody Product updatedProduct) {
         try {
             Product existingProduct = productService.findBySku(sku);
             existingProduct.setProductName(updatedProduct.getProductName());
