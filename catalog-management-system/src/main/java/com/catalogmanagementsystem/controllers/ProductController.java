@@ -40,17 +40,7 @@ public class ProductController {
     }
     @PutMapping("/{sku}")
     public ResponseEntity<Product> updateProductBySku(@PathVariable String sku,@RequestBody Product updatedProduct) {
-        try {
-            Product existingProduct = productService.findBySku(sku);
-            existingProduct.setProductName(updatedProduct.getProductName());
-            existingProduct.setDescription(updatedProduct.getDescription());
-            existingProduct.setPrice(updatedProduct.getPrice());
-
-            Product savedProduct = productService.save(existingProduct);
-            return ResponseEntity.ok(savedProduct);
-        } catch (ProductNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
+       return productService.updateProduct(sku ,updatedProduct);
     }
 
     @DeleteMapping("/{sku}")
