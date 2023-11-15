@@ -53,5 +53,28 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found"));
     }
+	@Override
+	public ResponseEntity<Product> updateProduct(String sku, Product updatedProduct) {
+		{
+	        try {
+	            // Retrieve the existing product by SKU
+	            Product existingProduct = productRepository.findBySku(sku);
+
+	            // Update the fields with the new values
+	            existingProduct.setProductName(updatedProduct.getProductName());
+	            existingProduct.setDescription(updatedProduct.getDescription());
+	            existingProduct.setPrice(updatedProduct.getPrice());
+	            existingProduct.setStockAvailability(updatedProduct.getStockAvailability());
+
+	            // Save the updated product
+	            Product savedProduct = productRepository.save(existingProduct);
+
+	            // Return the updated product in the response
+	            return ResponseEntity.ok(savedProduct);
+	        } catch (ProductNotFoundException ex) {
+	            // If the product with the specified SKU is not found, return a 404 Not Found response
+	            return ResponseEntity.notFound().build();
+	        }
+	    }
 }
 
