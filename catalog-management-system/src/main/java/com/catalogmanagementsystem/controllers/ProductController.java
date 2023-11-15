@@ -2,6 +2,7 @@ package com.catalogmanagementsystem.controllers;
 
 import com.catalogmanagementsystem.entities.Product;
 import com.catalogmanagementsystem.exceptions.ProductNotFoundException;
+import com.catalogmanagementsystem.exceptions.ProductServiceException;
 import com.catalogmanagementsystem.exceptions.ProductAlreadyExistsException;
 import com.catalogmanagementsystem.services.ProductService;
 
@@ -39,8 +40,15 @@ public class ProductController {
         }
     }
     @PutMapping("/{sku}")
-    public ResponseEntity<Product> updateProductBySku(@PathVariable String sku,@RequestBody Product updatedProduct) {
-       return productService.updateProduct(sku ,updatedProduct);
+    public ResponseEntity<Product> updateProduct(@PathVariable String sku, @RequestBody Product updatedProduct) {
+        try {
+            Product product = productService.updateProduct(sku, updatedProduct);
+            return ResponseEntity.ok(product);
+        } catch (ProductNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (ProductServiceException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
     @DeleteMapping("/{sku}")
