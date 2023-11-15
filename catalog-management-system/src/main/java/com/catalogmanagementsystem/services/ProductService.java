@@ -10,4 +10,5 @@ public interface ProductService {
     Product save(Product product);
     void deleteBySku(String sku);
 	Product findProductById(Long productId);
+	Product updateProduct(String sku, Product updatedProduct);
 }
