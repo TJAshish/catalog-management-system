@@ -1,54 +1,80 @@
-package com.hostelmanagement.service;
+package com.catalogmanagementsystem.serviceImpl;
 
-import com.hostelmanagement.model.Complaint;
-import com.hostelmanagement.model.Hostel;
-import com.hostelmanagement.repository.ComplaintRepository;
+import com.catalogmanagementsystem.entities.Product;
+import com.catalogmanagementsystem.exceptions.ProductNotFoundException;
+import com.catalogmanagementsystem.exceptions.ProductServiceException;
+import com.catalogmanagementsystem.repository.ProductRepository;
+import com.catalogmanagementsystem.services.ProductService;
+import com.catalogmanagementsystem.exceptions.ProductAlreadyExistsException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-
 @Service
-public class ComplaintService {
+public class ProductServiceImpl implements ProductService {
+	
+	@Autowired
+    private ProductRepository productRepository;
 
-    @Autowired
-    private  ComplaintRepository complaintRepository;
-
-    public List<Complaint> getAllComplaints() {
-        return complaintRepository.findAll();
+    @Override
+    public Product findBySku(String sku) {
+        Product product = productRepository.findBySku(sku);
+        if (product == null) {
+            throw new ProductNotFoundException("Product with SKU " + sku + " not found");
+        }
+        return product;
     }
 
-    public Optional<Complaint> getComplaintById(Long id) {
-        return complaintRepository.findById(id);
+    @Override
+    public List<Product> findAll() {
+        return productRepository.findAll();
     }
 
-    public Complaint createComplaint(Complaint complaint) {
-        return complaintRepository.save(complaint);
+    @Override
+    public Product save(Product product) {
+        // Check if a product with the same SKU already exists
+        Product existingProduct = productRepository.findBySku(product.getSku());
+        if (existingProduct != null) {
+            throw new ProductAlreadyExistsException("Product with SKU " + product.getSku() + " already exists");
+        }
+        return productRepository.save(product);
     }
 
-    public Complaint updateComplaint(Long id, Complaint updatedComplaint) {
-        return complaintRepository.findById(id)
-                .map(complaint -> {
-                    complaint.setDate(updatedComplaint.getDate());
-                    complaint.setDescription(updatedComplaint.getDescription());
-                    complaint.setStatus(updatedComplaint.getStatus());
-                    // You might want to handle RoomAllotment update here as well
-                    return complaintRepository.save(complaint);
-                })
-                .orElseGet(() -> {
-                    updatedComplaint.setId(id);
-                    return complaintRepository.save(updatedComplaint);
-                });
+    @Override
+    public void deleteBySku(String sku) {
+        Product product = productRepository.findBySku(sku);
+        if (product == null) {
+            throw new ProductNotFoundException("Product with SKU " + sku + " not found");
+        }
+        productRepository.delete(product);
     }
 
-    public void deleteComplaint(Long id) {
-        complaintRepository.deleteById(id);
+    @Override
+    public Product findProductById(Long productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found"));
     }
 
-    public List<Hostel> getcomplaintInTimePeriod(Date startTime, Date endTime) {
-        return complaintRepository.findByCreateDateBetween(startTime, endTime);
-    }
+    @Override
+    public Product updateProduct(String sku, Product updatedProduct) {
+        try {
+            Product existingProduct = productRepository.findBySku(sku);
+
+            if (existingProduct != null) {
+                // Update fields of existingProduct with updatedProduct
+                existingProduct.setProductName(updatedProduct.getProductName());
+                existingProduct.setDescription(updatedProduct.getDescription());
+                existingProduct.setPrice(updatedProduct.getPrice());
+
+                // Save the updated product
+                return productRepository.save(existingProduct);
+            } else {
+                throw new ProductNotFoundException("Product with SKU " + sku + " not found");
+            }
+        } catch (Exception e) {
+            throw new ProductServiceException("Error updating product with SKU " + sku, e);
+        }
+	}
 }
 
