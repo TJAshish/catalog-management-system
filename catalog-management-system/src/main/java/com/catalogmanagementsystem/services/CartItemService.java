@@ -4,10 +4,16 @@ import com.catalogmanagementsystem.entities.CartItem;
 import com.catalogmanagementsystem.entities.Product;
 import com.catalogmanagementsystem.entities.User;
 
+
+import java.util.List;
+
 public interface CartItemService {
-    CartItem findById(Long id);
-    void addProductToCart(User user, Product product, int quantity);
-    void deleteById(Long id);
-	
+    CartItem findCartItemById(Long cartItemId);
+
+    List<CartItem> findAllCartItems();
+
+    CartItem saveCartItem(CartItem cartItem);
+
+    void deleteCartItem(Long cartItemId);
 }
 
